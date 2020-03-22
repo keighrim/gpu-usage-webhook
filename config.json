@@ -1,0 +1,7 @@
+{
+  "servers": [
+    { "hostname": "some.hostname.url", "port": 22, "login": "some_login"  }
+  ],
+  "port": 5000, 
+  "slack-token": ""
+}
