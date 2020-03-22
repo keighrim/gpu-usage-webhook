@@ -1,7 +1,10 @@
 from flask import Flask, request
+import requests
+from threading  import Thread
 import os
 import json
 import subprocess
+
 
 app = Flask(__name__)
 CHECK_GPU_CMD = 'hostname; while read line ; do if [ "$line" != "| No running processes found |" ] ; then gpui=$(echo $line | cut -d " " -f 2); pid=$(echo $line | cut -d " " -f 3); pinfo=$(ps -hp $pid -o comm,pid,ruser); printf "%s - %s \n" $gpui "$pinfo"; fi done < <(nvidia-smi  | grep -A 10 "|==========================================" | grep -B 10 "+-----------------------------------" | head -n -1 | tail -n +2 | tr -s " "); echo ""'
@@ -26,14 +29,21 @@ def check_gpu(login, host, port="22"):
 @app.route('/check_all')
 def slack_integration():
     token = request.args.get('token', '')
+    response_to = request.args.get('response_url', None)
     if app.config['auth'] == token:
-        return response_slack(check_all())
+        if response_to is None:
+            return check_all(), 200
+        else:
+            thread = Thread(target=response_slack, kwargs={'res_url': response_to})
+            thread.start()
+            return "checking, might take several seconds...", 200
     else:
-        return 403
+        return "Authentication failed", 403
+        
 
 
 def check_all():
-    msg = ""
+    msg = "```\n"
     import getpass
     cur_login = getpass.getuser()
     for server in app.config['servers']:
@@ -41,14 +51,18 @@ def check_all():
         port = str(server.get('port', 22))
         host = server['hostname']
         msg += check_gpu(login, host, port).decode('utf-8')
+    msg += '\n```'
     return msg
 
 
-def response_slack(msg):
-    return msg
+def response_slack(res_url):
+    msg = check_all()
+    payload = {'text': msg}
+    headers = {'Content-Type': 'application/json'}
+    requests.post(res_url, data=json.dumps(payload), headers=headers)
 
 
 if __name__ == "__main__":
     load_config()
-    app.run(host='0.0.0.0', port=app.config['port'], debug=True)
+    app.run(host='0.0.0.0', port=app.config['port'])
 
