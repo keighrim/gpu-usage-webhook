@@ -1,6 +1,6 @@
 # Who's using GPU now? 
 [![License](https://img.shields.io/github/license/keighrim/gpu-usage-webhook.svg?style=popout-square)](LICENSE) 
-[![Version](https://img.shields.io/github/tag/keighrim/gpu-usage-webhook.svg?style=popout-square)](https://github.com/keighrim/zenhub-card-movement-webhook/tags) 
+[![Version](https://img.shields.io/github/tag/keighrim/gpu-usage-webhook.svg?style=popout-square)](https://github.com/keighrim/gpu-usage-webhook/tags) 
 
 This is a simple webapp designed for Slack integration (as a slash command) to check Nvidia GPU usage of multiple servers. 
 
